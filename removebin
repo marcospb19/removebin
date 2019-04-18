@@ -1,0 +1,48 @@
+#!/usr/bin/bash
+
+
+#                                __   _
+#    _______ __ _  ___ _  _____ / /  (_)__
+#   / __/ -_)  ' \/ _ \ |/ / -_) _ \/ / _ \
+#  /_/  \__/_/_/_/\___/___/\__/_.__/_/_//_/
+#
+
+
+# Created main so i can reuse this code recursively
+# when a directory is found, this way the script makes
+# recursion on all folders, even if inside of folders
+
+recursiveMain()
+{
+	for i in $*; do
+
+		if [ -d $i ]; then
+			recursiveMain "$i"/*
+
+
+		# If it's executable, check if binary
+
+		# Perfomance note:
+		# -x is faster than -f in a scenario where most files are not binary
+		# If most of them are binary, -f is faster than -x
+
+		elif [ -x $i ]; then
+
+			file -i $i                        | \
+			grep "; charset=bin" > /dev/null && \
+			rm $i                            && \
+			echo "Removed $i."
+
+			# echo a | wc ; [ PIPESTATUS[0] ] && echo a
+			# If directory repeat everything
+		fi
+	done
+}
+
+
+if [[ $USER == "root" ]]; then
+   echo "Don't run this as root, you can delete all binaries from your system!!"
+else
+   recursiveMain $*
+fi
+
