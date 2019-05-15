@@ -32,9 +32,7 @@ recursiveMain()
 			grep "; charset=bin" > /dev/null && \
 			rm $i                            && \
 			echo "Removed $i."
-
-			# echo a | wc ; [ PIPESTATUS[0] ] && echo a
-			# If directory repeat everything
+		
 		fi
 	done
 }
