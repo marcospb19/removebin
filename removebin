@@ -32,11 +32,16 @@ recursiveMain()
 			grep "; charset=bin" > /dev/null && \
 			rm $i                            && \
 			echo "Removed $i."
-		
+
 		fi
 	done
 }
 
+for i in $@; do
+	if [[ "$i" == "--help" || "$i" == "-h" ]]; then
+		echo "Usage: removebin file folder"
+		break
+	fi
 
 if [[ $USER == "root" ]]; then
    echo "Don't run this as root, you can delete all binaries from your system!!"

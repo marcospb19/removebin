@@ -1,71 +1,84 @@
+# Install.sh
 
+# This installer is a adapted copy of gloner's
+# one, from https://github.com/marcospb19/gloner
+
+#                                __   _
+#    _______ __ _  ___ _  _____ / /  (_)__
+#   / __/ -_)  ' \/ _ \ |/ / -_) _ \/ / _ \
+#  /_/  \__/_/_/_/\___/___/\__/_.__/_/_//_/
 #
-# install.sh
-# script to install https://github.com/marcospb19/removebin
 #
 
+# run "sudo ./install" to install removebin
 
-# Created a function to enable 'return' control flow
+# set -x
 
-removebin()
+installation_directory='/usr/bin/removebin'
+
+cat << EOF
+                                __   _
+    _______ __ _  ___ _  _____ / /  (_)__
+   / __/ -_)  ' \\/ _ \\ |/ / -_) _ \\/ / _ \\
+  /_/  \\__/_/_/_/\\___/___/\\__/_.__/_/_//_/
+
+ install.sh
+
+EOF
+
+
+install_removebin()
 {
-	# Stop if anything fails
-	set -e
-
-	if [[ $1 == "-u" ]]; then
-		# Installation for the user
-		echo "Installing for your user, $USER..."
-
-		# INSTALL_DIRECTORY="$HOME/.bin"
-		# mkdir "$HOME/.bin"
-
-	elif [[ $USER == "root" ]]; then
-		# Install for all users
-		echo "Installing for all users..."
-		# INSTALL_DIRECTORY="/usr/bin"
-	else
-		# Can't install
-		echo "You are not running as root, can't install \"removebin\" to all users"
-		echo
-		echo "Type \"sudo ./install.sh\" to install for all users"
-		echo
-		echo "Or type \"./install.sh -u\" to install only for this user at ~/.bin"
-		return
+	if [[ $is_installed ]]; then
+		rm "$where_is_removebin"
 	fi
 
-
-	# # Check if the file exists
-	# if [[ ! -f removebin ]]; then
-	# 	# echo "\"removebin\" file not found to install"
-	# 	return
-	# fi
-
-
-	# # If isn't executable
-	# if [[ ! -x removebin ]]; then
-	# 	# echo "\"removebin\" isn\'t executable, run \"sudo chmod +x removebin\" before"
-	# 	return
-	# fi
-
-
-	# If ~/.bin isn't already added to the $PATH
-	DOT_BIN_IS_A_PATH=$(echo "$PATH" | tr ":" "\n" | grep "/home" | grep "/\.bin")
-
-	if [[ ! DOT_BIN_IS_A_PATH ]]; then
-		# Add it to the .zshrc and .bashrc
-		echo "Adding PATH variables to ~/.*rc"
-		[[ -f "$HOME"/.zshrc ]] && \
-		echo "export PATH=$PATH:$HOME/.bin" >> "$HOME"/.zshrc
-		echo "export PATH=$PATH:$HOME/.bin" >> "$HOME"/.bashrc
-	fi
-
-
-	# # echo "cp removebin $INSTALL_DIRECTORY"
-
-	# cp removebin "$INSTALL_DIRECTORY"
-
-	# # echo "Installed successfully!"
-	# # echo "Reopen your terminal and run \"removebin --help\" to see help"
+	cp removebin $installation_directory && \
+		echo "Removebin installed successfully."
 }
 
-removebin $1
+
+if [[ "$USER" != 'root' ]]; then
+	echo 'You need to run this script with sudo to install "removebin" to your system'
+	echo 'Administrator permissions are needed to copy "removebin" to /usr/bin/ folder'
+	exit 1
+
+elif [[ ! -f ./removebin ]]; then
+	echo '"removebin" file cannot be found here, where is it? (run ./install.sh where "removebin" is at)'
+	exit 2
+
+elif [[ ! -x ./removebin ]]; then
+	echo '"removebin" cannot be executable, run "sudo chmod +x removebin" to fix this'
+	exit 3
+fi
+
+where_is_removebin=$(which removebin 2> /dev/null)
+
+if [[ ${where_is_removebin:0:1} == '/' ]]; then
+	is_installed=true
+fi
+
+if [[ ! $is_installed ]]; then
+	install_removebin
+
+else
+	diff=$(diff "$where_is_removebin" ./removebin)
+	if [[ $diff ]]; then
+		echo "Removebin is already installed, but the file here differs"
+		echo "Do you want to overwrite /usr/bin/removebin with removebin? "
+		read -p "[Y/n]" option
+
+		if [[ "$option" != 'n' && "$option" != 'N' ]]; then
+			install_removebin
+
+		else
+			echo "Installation canceled."
+		fi
+
+	else
+		echo "Removebin is already installed, nothing done."
+	fi
+
+fi
+
+# set +x

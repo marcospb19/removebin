@@ -1,3 +1,6 @@
+# For now removebin isn't a secure script, i'll need to add verifications before deleting files, please wait until it is ready
+
+
 # RemoveBin
 
 Easy shell script to remove binaries from folders recursively.
