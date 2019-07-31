@@ -1,23 +1,30 @@
-# For now removebin isn't a secure script, i'll need to add verifications before deleting files, please wait until it is ready
-
-
 # RemoveBin
 
-Easy shell script to remove binaries from folders recursively.
+Easy shell script with less than 100 lines to remove binaries from folders recursively.
 
-### Installation
+RemoveBin will always ask before removing the files.
 
-/* Pending */
+## Installation
 
+```
+git clone https://github.com/marcospb19/removebin
+cd removebin
+sudo ./install.sh
+```
+
+You can inspect `install.sh` to verify that it just copies the file to
+`/usr/bin/removebin`
 
 ### Usage
 
+Remove binary files \
+`removebin file1 file2...`
+
 To remove all binary files from current folder \
-`removebin .`
+`removebin . -R` or `removebin . --recursive`
 
 To remove all binary files from another folder \
-`removebin anotherfolder/`
+`removebin anotherFolder/ -R` or `removebin anotherFolder --recursive`
 
 To remove all binary files starting with specific name \
 `removebin (name)*`
-
