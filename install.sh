@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Install.sh
 
 # This installer is a adapted copy of gloner's
