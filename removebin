@@ -14,16 +14,18 @@
 
 function show_help()
 {
-	echo "removebin it's very premature, i need to put time into this"
-	echo
-	echo "Usage:"
-	echo "    removebin <Files>"
-	echo "    removebin <Folders>"
-	echo "    removebin <Files> <Folders>"
-	echo "Flags:"
-	echo "    Recursive: To search recursively in folders"
-	echo "    removebin <Folders>         [-R|--recursive]"
-	echo "    removebin <Folders> <Files> [-R|--recursive]"
+	cat <<- EOF
+	removebin it's very premature, i need to put time into this
+
+	Usage:
+	    removebin <Files>
+	    removebin <Folders>
+	    removebin <Files> <Folders>
+	Flags:
+	    Recursive: To search recursively in folders
+	    removebin <Folders>         [-R|--recursive]
+	    removebin <Folders> <Files> [-R|--recursive]
+	EOF
 }
 
 recursive=""
@@ -33,9 +35,13 @@ function recursive_main()
 {
 	for i in "$@"; do
 
-		# For some reason "$i" with quotes doesn't work
-		if [[ "$recursive" && -d $i ]]; then
-			recursive_main "$i"/*
+		# Nested if to ignore next elif if passes
+		if [[ -d "$i" ]]; then
+			# If it is a directory
+			if [[[ "$recursive" ]]; then
+				# Recursive call
+				recursive_main "$i"/*
+			fi
 
 		# If it's executable, check if binary
 
@@ -43,13 +49,13 @@ function recursive_main()
 		# -x is faster than -f in a scenario where most files are not binary
 		# If most of them are binary, -f is faster than -x
 
-	elif [[ -x "$i" ]]; then
-		file -i "$i"                                 | \
-		grep "executable; charset=bin" > /dev/null  && \
-		list_of_files_to_remove+=($i)               && \
-		echo "Found  $i"
-	fi
-done
+		elif [[ -x "$i" ]]; then
+			file -i "$i"                                  \
+			| grep "-executable; charset=bin" > /dev/null  \
+			&& list_of_files_to_remove+=($i)                \
+			&& echo "Found  $i"
+		fi
+	done
 }
 
 number_of_arguments="$#"
@@ -62,8 +68,8 @@ for i in $@; do
 
 	elif [[ "$i" == "--help" || "$i" == "-h" ]]; then
 		# Show help and exit the program
-		show_help ; exit 0
-		break
+		show_help
+		exit 0
 	fi
 done
 
@@ -87,13 +93,15 @@ else
 	done
 fi
 
-if [[ "${#list_of_files_to_remove[@]}" == 0 ]]; then
+number_of_files="${#list_of_files_to_remove[@]}"
+
+if [[ "$number_of_files" == 0 ]]; then
 	echo "Binary files not found."
 	exit 1
 fi
 
 echo
-echo "${#list_of_files_to_remove[@]} binary files found."
+echo "$number_of_files binary files found."
 read -p 'Remove? (y/N) ' proceed
 
 
@@ -101,7 +109,12 @@ if [[ "$proceed" == "Y" || "$proceed" == "y" ]]; then
 	for i in "${list_of_files_to_remove[@]}"; do
 		rm "$i"
 	done
-	echo "Done"
+
+	if [[ $number_of_files == 1 ]]; then
+		echo "Done, $number_of_files file removed."
+	else
+		echo "Done, $number_of_files files removed."
+	fi
 
 else
 	echo "Aborting operation."

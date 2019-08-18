@@ -24,7 +24,6 @@ cat << EOF
    / __/ -_)  ' \\/ _ \\ |/ / -_) _ \\/ / _ \\
   /_/  \\__/_/_/_/\\___/___/\\__/_.__/_/_//_/
 
- install.sh
 
 EOF
 
@@ -68,7 +67,8 @@ else
 	if [[ $diff ]]; then
 		echo "Removebin is already installed, but the file here differs"
 		echo "Do you want to overwrite /usr/bin/removebin with removebin? "
-		read -p "[Y/n]" option
+		read -p "[Y/n]: " option
+		echo
 
 		if [[ "$option" != 'n' && "$option" != 'N' ]]; then
 			install_removebin
