@@ -28,7 +28,6 @@ function show_help()
 	EOF
 }
 
-recursive=""
 list_of_files_to_remove=()
 
 function recursive_main()
@@ -38,7 +37,7 @@ function recursive_main()
 		# Nested if to ignore next elif if passes
 		if [[ -d "$i" ]]; then
 			# If it is a directory
-			if [[[ "$recursive" ]]; then
+			if [[ "$recursive" ]]; then
 				# Recursive call
 				recursive_main "$i"/*
 			fi
@@ -52,19 +51,16 @@ function recursive_main()
 		elif [[ -x "$i" ]]; then
 			file -i "$i"                                  \
 			| grep "-executable; charset=bin" > /dev/null  \
-			&& list_of_files_to_remove+=($i)                \
+			&& list_of_files_to_remove+=("$i")              \
 			&& echo "Found  $i"
 		fi
 	done
 }
 
-number_of_arguments="$#"
-
 # Simple flag detection
 for i in $@; do
 	if [[ "$i" == "--recursive" || "$i" == "-R" ]]; then
-		recursive="t" # true
-		number_of_arguments=$(( $number_of_arguments - 1 ))
+		recursive="true"
 
 	elif [[ "$i" == "--help" || "$i" == "-h" ]]; then
 		# Show help and exit the program
@@ -84,7 +80,7 @@ if [[ "$#" == 0 ]]; then
 	recursive_main ./* # Call on the same directory
 
 else
-	for i in $*; do
+	for i in "$@"; do
 		if [[ -d "$i" ]]; then
 			recursive_main "$i"/*
 		else
@@ -102,7 +98,7 @@ fi
 
 echo
 echo "$number_of_files binary files found."
-read -p 'Remove? (y/N) ' proceed
+read -rp 'Remove? (y/N) ' proceed
 
 
 if [[ "$proceed" == "Y" || "$proceed" == "y" ]]; then
