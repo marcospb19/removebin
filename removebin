@@ -1,112 +1,98 @@
-#!/usr/bin/env bash
-
-
+#!/usr/bin/env sh
 #                                __   _
 #    _______ __ _  ___ _  _____ / /  (_)__
 #   / __/ -_)  ' \/ _ \ |/ / -_) _ \/ / _ \
 #  /_/  \__/_/_/_/\___/___/\__/_.__/_/_//_/
 #
+#  Remove binary files from folders
+#  URL: https://github.com/marcospb19/removebin
+#
 
+if [ "$USER" = "root" ]; then
+	echo "Please be careful with running \"removebin\" as root/sudo."
+fi
 
-# Created main so i can reuse this code recursively
-# when a directory is found, this way the script makes
-# recursion on all folders, even if inside of folders
-
-function show_help()
+show_help()
 {
 	cat <<- EOF
-	removebin it's very premature, i need to put time into this
 
-	Usage:
-	    removebin <Files>
-	    removebin <Folders>
-	    removebin <Files> <Folders>
-	Flags:
-	    Recursive: To search recursively in folders
-	    removebin <Folders>         [-R|--recursive]
-	    removebin <Folders> <Files> [-R|--recursive]
+	    Usage:
+	        removebin <Files>
+	        removebin <Folders>
+	        removebin <Files> <Folders>
+
 	EOF
+	exit 0
 }
 
-list_of_files_to_remove=()
-
-function recursive_main()
-{
-	for i in "$@"; do
-
-		# Nested if to ignore next elif if passes
-		if [[ -d "$i" ]]; then
-			# If it is a directory
-			if [[ "$recursive" ]]; then
-				# Recursive call
-				recursive_main "$i"/*
-			fi
-
-		# If it's executable, check if binary
-
-		# Perfomance note:
-		# -x is faster than -f in a scenario where most files are not binary
-		# If most of them are binary, -f is faster than -x
-
-		elif [[ -x "$i" ]]; then
-			file -i "$i"                                  \
-			| grep "-executable; charset=bin" > /dev/null  \
-			&& list_of_files_to_remove+=("$i")              \
-			&& echo "Found  $i"
-		fi
-	done
-}
-
-# Simple flag detection
-for i in $@; do
-	if [[ "$i" == "--recursive" || "$i" == "-R" ]]; then
-		recursive="true"
-
-	elif [[ "$i" == "--help" || "$i" == "-h" ]]; then
-		# Show help and exit the program
+for arg in "$@"; do
+	if [ "$arg" = "-h" ] || [ "$arg" = "--help"  ] || \
+	   [ "$arg" = "-u" ] || [ "$arg" = "--usage" ]; then
 		show_help
-		exit 0
 	fi
 done
 
-if [[ "$USER" == "root" ]]; then
-	echo "Please avoid running \"removebin\" as root/sudo."
-fi
+list_of_files_to_remove=""
+number_of_files=0
 
+add_to_list()
+{
+	# If it's executable, check if binary
+	#
+	# Perfomance note:
+	# -x is faster than -f in a scenario where most files are not binary
+	# If most of them are binary, -f is faster than -x
 
-# Things that actually matter:
+	if [ -x "$i" ]; then
+		file -i "$i"                                           \
+		| grep "-executable; charset=bin" > /dev/null           \
+		&& list_of_files_to_remove="$list_of_files_to_remove $i" \
+		&& number_of_files=$(( number_of_files + 1 ))             \
+		&& echo "Found  $i"
+	fi
+}
 
-if [[ "$#" == 0 ]]; then
-	recursive_main ./* # Call on the same directory
+search_in_folder()
+{
+	for i in "$1"/*; do
+		if [ -d "$i" ]; then
+			search_in_folder "$i"
+		else
+			add_to_list "$i"
+		fi
+	done
+}
 
+# Call on the same directory
+if [ "$#" = 0 ]; then
+	search_in_folder "$(pwd)"
 else
 	for i in "$@"; do
-		if [[ -d "$i" ]]; then
-			recursive_main "$i"/*
+		if [ -d "$i" ]; then
+			search_in_folder "$i"
 		else
-			recursive_main "$i"
+			add_to_list "$i"
 		fi
 	done
 fi
 
-number_of_files="${#list_of_files_to_remove[@]}"
-
-if [[ "$number_of_files" == 0 ]]; then
-	echo "Binary files not found."
-	exit 1
+if [ "$number_of_files" = 0 ]; then
+	echo "No binary files found."
+	exit 0
 fi
 
 echo
 echo "$number_of_files binary files found."
-read -rp 'Remove? (y/N) ' proceed
+printf "Remove? (y/N) "
+read -r proceed
 
 
-if [[ "$proceed" == "Y" || "$proceed" == "y" ]]; then
-	for i in "${list_of_files_to_remove[@]}"; do
+if [ "$proceed" = "Y" ] || [ "$proceed" = "y" ]; then
+	for i in $list_of_files_to_remove; do
 		rm "$i"
 	done
 
-	if [[ $number_of_files == 1 ]]; then
+	if [ "$number_of_files" = 1 ]; then
 		echo "Done, $number_of_files file removed."
 	else
 		echo "Done, $number_of_files files removed."
