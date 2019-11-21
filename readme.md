@@ -21,5 +21,8 @@ removebin <Folders>
 removebin <Files> <Folders>
 ```
 
-### Maybe
-Maybe I should use `find -print` to increase performance.
+Run `removebin .` or just `removebin` to pass the current folder.
+
+## Screenshots
+
+![removebin installation and usage](https://github.com/marcospb19/removebin/blob/master/images/removebin_installation_and_usage.png)
