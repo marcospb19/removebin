@@ -1,38 +1,25 @@
 # RemoveBin
 
-RemoveBin cleans mess from C and C++ workspaces
+RemoveBin is a little utility that cleans binary files from C and C++ compilations.
 
-Easy smart shell script with ~120 lines (< 3KB) to remove binaries from folders recursively.
+RemoveBin will always ask and show all files before deleting.
 
-Note: RemoveBin will always show all files and ask before removing.
-
+Only ~100 lines.
 
 ## Installation
 ```shell
 git clone https://github.com/marcospb19/removebin
 cd removebin
-sudo cp removebin /usr/bin
+./install
 ```
 
-Alternatively you can use the simple script `install.sh` instead of the last command
-
 ## Usage
-Removing 2 specific binary files \
-`removebin file1 file2`
 
-Remove all binary files from folder \
-`removebin folder`
+```shell
+removebin <Files>
+removebin <Folders>
+removebin <Files> <Folders>
+```
 
-Removing recursively from a folder
-`removebin folder --recursive ` or
-`removebin folder -R`
-
-Using your shell to pass all files with specific prefix \
-`removebin prefix*`
-
-You can combine all of this examples.
-
-#### TODO and future
-TODO: Use something (maybe `find`) to speed up the directory percursion
-
-Also RemoveBin might eventually become an C program in the future
+### Maybe
+Maybe I should use `find -print` to increase performance.
